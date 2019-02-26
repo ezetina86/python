@@ -61,7 +61,6 @@ if opt == 1:
 
     turtle.exitonclick()
 
-
 elif opt == 0:
     print('Bye bitch!')
 
