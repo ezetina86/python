@@ -10,10 +10,10 @@ def create_client(client_name):
 # Assigning the new value to the previus string state and then
 # we add the comma
     if client_name not in clients:
-       clients += client_name
-       _add_comma()
+        clients += client_name
+        _add_comma()
     else:
-        print(client_name + ' already exists...')   
+        print(client_name + ' already exists...')
 
 
 # Fucntion to add a comma after each name we add
@@ -23,22 +23,38 @@ def _add_comma():
     clients += ','
 
 # Function to list clients
+
+
 def list_clients():
     global clients
 
     print(clients)
 
 
-# Update clients recives a client name to update it 
+# Update clients recives a client name to update it
 def update_client(client_name, updated_client_name):
     global clients
 
     if client_name in clients:
-        clients = clients.replace(client_name + ',', updated_client_name + ',') 
+        clients = clients.replace(client_name + ',', updated_client_name + ',')
     else:
-        print('Client not found!')
+        _get_client_norfound()
+
+ # Delete clients recives a client name to delete it
+
+
+def delete_client(client_name):
+    global clients
+
+    if client_name in clients:
+        # Replaced by void string
+        clients = clients.replace(client_name + ',', '')
+    else:
+        _get_client_norfound()
 
 # Function to print a welcome message
+
+
 def _print_welcome():
     print('*'*75)
 
@@ -49,13 +65,18 @@ def _print_welcome():
     print('What wolud you like to do?')
 
     print('[C]reate client')
-    print('[D]elete client')
+    print('[R]ead clients list')
     print('[U]pdate client')
+    print('[D]elete client')
 
 
 # Private method  to get the  client name
 def _get_client_name():
     return input('Please type the client name... ')
+
+# Private method  to get inform that the client does not exists in the list clients
+def _get_client_norfound():
+    return print('Client not found!')
 
 # main function calls crate_client
 if __name__ == '__main__':
@@ -67,15 +88,22 @@ if __name__ == '__main__':
 
  # Lets check what the user want to do
     if command == 'C':
+        list_clients()
         client_name = _get_client_name()
         create_client(client_name)
         list_clients()
-    elif command == 'D':
-        pass
+    elif command == 'R':
+        list_clients()
     elif command == 'U':
-         client_name = _get_client_name()
-         updated_client_name = input('Please type the new client name...')
-         update_client(client_name,updated_client_name) 
+        list_clients()
+        client_name = _get_client_name()
+        updated_client_name = input('Please type the new client name...')
+        update_client(client_name, updated_client_name)
+        list_clients()   
+    elif command == 'D':
+        list_clients()
+        client_name = _get_client_name()
+        delete_client(client_name)
+        list_clients()
     else:
         print('Invalid option')
-        
