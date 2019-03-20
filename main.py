@@ -23,8 +23,6 @@ def _add_comma():
     clients += ','
 
 # Function to list clients
-
-
 def list_clients():
     global clients
 
@@ -41,8 +39,6 @@ def update_client(client_name, updated_client_name):
         _get_client_norfound()
 
  # Delete clients recives a client name to delete it
-
-
 def delete_client(client_name):
     global clients
 
@@ -51,6 +47,16 @@ def delete_client(client_name):
         clients = clients.replace(client_name + ',', '')
     else:
         _get_client_norfound()
+
+# Function to search a  client into list clients
+def search_client(client_name):
+    client_list = clients.split(',')
+
+    for client in client_list:
+        if client != client_name:
+            continue
+        else:
+            return True    
 
 # Function to print a welcome message
 
@@ -68,6 +74,7 @@ def _print_welcome():
     print('[R]ead clients list')
     print('[U]pdate client')
     print('[D]elete client')
+    print('[S]earch client')
 
 
 # Private method  to get the  client name
@@ -105,5 +112,12 @@ if __name__ == '__main__':
         client_name = _get_client_name()
         delete_client(client_name)
         list_clients()
+    elif command == 'S':
+        client_name = _get_client_name()
+        found = search_client(client_name)
+        if found:
+            print(client_name + ' found!')
+        else:
+            print( ' {} not found!'.format(client_name))   
     else:
         print('Invalid option')
