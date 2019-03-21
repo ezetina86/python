@@ -1,3 +1,4 @@
+import sys
 # Creating the sting
 clients = 'Pablo,Ricardo,'
 
@@ -79,7 +80,17 @@ def _print_welcome():
 
 # Private method  to get the  client name
 def _get_client_name():
-    return input('Please type the client name... ')
+    client_name = None
+    while not client_name:
+        client_name = input('Please type the client name... ')
+
+        if client_name == 'exit':
+            client_name = None
+            break
+    if not client_name:
+        sys.exit()
+
+    return client_name
 
 # Private method  to get inform that the client does not exists in the list clients
 def _get_client_norfound():
