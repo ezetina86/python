@@ -1,6 +1,6 @@
 import sys
 # Creating the sting
-clients = 'Pablo,Ricardo,'
+clients = ['Pablo','Ricardo']
 
 
 # global is used to define that the  variable clients is global
@@ -11,49 +11,57 @@ def create_client(client_name):
 # Assigning the new value to the previus string state and then
 # we add the comma
     if client_name not in clients:
-        clients += client_name
-        _add_comma()
+    # Changing to works with list, so  i don't need commas anymore
+        #clients += client_name
+        #add_comma()
+        clients.append(client_name)
     else:
         print(client_name + ' already exists...')
 
 
 # Fucntion to add a comma after each name we add
-def _add_comma():
-    global clients
-
-    clients += ','
+#def _add_comma():
+#    global clients
+#    clients += ','
 
 # Function to list clients
 def list_clients():
-    global clients
-
-    print(clients)
-
+ # Changing to works with list, so  i don't need commas anymore
+    #global clients
+    #print(clients)
+   for idx, client in enumerate(clients):
+      print('{} : {}'.format(idx,client))
 
 # Update clients recives a client name to update it
 def update_client(client_name, updated_client_name):
+ # Changing to works with liss
     global clients
 
-    if client_name in clients:
-        clients = clients.replace(client_name + ',', updated_client_name + ',')
+    if client_name in clients:        
+        #clients = clients.replace(client_name + ',', updated_client_name + ',')
+        index = clients.index(client_name)
+        clients[index] = updated_client_name
     else:
         _get_client_norfound()
 
  # Delete clients recives a client name to delete it
 def delete_client(client_name):
+# Changing to works with list
     global clients
 
     if client_name in clients:
         # Replaced by void string
-        clients = clients.replace(client_name + ',', '')
+        #clients = clients.replace(client_name + ',', '')
+        clients.remove(client_name)
     else:
         _get_client_norfound()
 
 # Function to search a  client into list clients
+# Changing to works with list
 def search_client(client_name):
-    client_list = clients.split(',')
+    #client_list = clients.split(',')
 
-    for client in client_list:
+    for client in clients:
         if client != client_name:
             continue
         else:
