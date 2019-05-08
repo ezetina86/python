@@ -1,22 +1,35 @@
 import sys
-# Creating the sting
-clients = ['Pablo','Ricardo']
+# Creating the dictionary
+clients = [
+    {
+        'name': 'Enrique',
+        'company': 'EPAM' ,
+        'email': 'enrique_zetina@epam.com',
+        'position': 'Software Engienner',
+    },
+    {
+        'name': 'Juan',
+        'company': 'Google',
+        'email': 'juan@google.com',
+        'position': 'Data Engienner',
+    }
+]
 
 
 # global is used to define that the  variable clients is global
 # it means that it has been defined as 'Pablo and Ricardo'
-def create_client(client_name):
+def create_client(client):
     global clients
 
 # Assigning the new value to the previus string state and then
 # we add the comma
-    if client_name not in clients:
+    if client not in clients:
     # Changing to works with list, so  i don't need commas anymore
         #clients += client_name
         #add_comma()
-        clients.append(client_name)
+        clients.append(client)
     else:
-        print(client_name + ' already exists...')
+        print('Client already exists...')
 
 
 # Fucntion to add a comma after each name we add
@@ -26,35 +39,38 @@ def create_client(client_name):
 
 # Function to list clients
 def list_clients():
+    print('uid | name | company | email | position ')
+    print('*'*50)
  # Changing to works with list, so  i don't need commas anymore
     #global clients
     #print(clients)
-   for idx, client in enumerate(clients):
-      print('{} : {}'.format(idx,client))
+    for idx, client in enumerate(clients):
+        print('{uid} | {name} | {company} | {email} | {position}'.format(
+            uid=idx,
+            name=client['name'],
+            company=client['company'],
+            email=client['email'],
+            position=client['position']))
 
 # Update clients recives a client name to update it
-def update_client(client_name, updated_client_name):
+def update_client(client_id, updated_client):
  # Changing to works with liss
     global clients
 
-    if client_name in clients:        
-        #clients = clients.replace(client_name + ',', updated_client_name + ',')
-        index = clients.index(client_name)
-        clients[index] = updated_client_name
+    if len(clients) -1 >= client_id:
+        clients[client_id] = updated_client
     else:
-        _get_client_norfound()
+        print('Client not found!')
 
  # Delete clients recives a client name to delete it
-def delete_client(client_name):
+def delete_client(client_id):
 # Changing to works with list
     global clients
 
-    if client_name in clients:
-        # Replaced by void string
-        #clients = clients.replace(client_name + ',', '')
-        clients.remove(client_name)
-    else:
-        _get_client_norfound()
+    for idx, client in enumerate(clients):
+        if idx == client_id:
+            del clients[idx]
+            break
 
 # Function to search a  client into list clients
 # Changing to works with list
@@ -62,7 +78,7 @@ def search_client(client_name):
     #client_list = clients.split(',')
 
     for client in clients:
-        if client != client_name:
+        if client['name'] != client_name:
             continue
         else:
             return True    
@@ -77,7 +93,7 @@ def _print_welcome():
 
     print('*'*75)
 
-    print('What wolud you like to do?')
+    print('What would you like to do?')
 
     print('[C]reate client')
     print('[R]ead clients list')
@@ -85,6 +101,26 @@ def _print_welcome():
     print('[D]elete client')
     print('[S]earch client')
 
+
+# Private method to get the client dictionary
+def _get_client_field(field_name, message='What is the client {}?'):
+    field = None
+
+    while not field:
+        field = input(message.format(field_name))
+     
+    return field 
+
+#Another funtion to try get  values from clients
+def _get_client_from_user():
+    client = {
+        'name': _get_client_field('name'),
+        'company': _get_client_field('company'),
+        'email': _get_client_field('email'),
+        'position': _get_client_field('position'),
+    }
+
+    return client
 
 # Private method  to get the  client name
 def _get_client_name():
@@ -100,10 +136,6 @@ def _get_client_name():
 
     return client_name
 
-# Private method  to get inform that the client does not exists in the list clients
-def _get_client_norfound():
-    return print('Client not found!')
-
 # main function calls crate_client
 if __name__ == '__main__':
     _print_welcome()
@@ -114,25 +146,28 @@ if __name__ == '__main__':
 
  # Lets check what the user want to do
     if command == 'C':
-        list_clients()
-        client_name = _get_client_name()
-        create_client(client_name)
+        client = _get_client_from_user()
+
+        create_client(client)
         list_clients()
     elif command == 'R':
         list_clients()
     elif command == 'U':
         list_clients()
-        client_name = _get_client_name()
-        updated_client_name = input('Please type the new client name...')
-        update_client(client_name, updated_client_name)
+        client_id = int(_get_client_field('id'))
+        updated_client = _get_client_from_user()
+
+        update_client(client_id, updated_client)
         list_clients()   
     elif command == 'D':
         list_clients()
-        client_name = _get_client_name()
-        delete_client(client_name)
+        client_id = int(_get_client_field('id'))
+
+
+        delete_client(client_id)
         list_clients()
     elif command == 'S':
-        client_name = _get_client_name()
+        client_name = _get_client_field('name')
         found = search_client(client_name)
         if found:
             print(client_name + ' found!')
