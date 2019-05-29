@@ -1,0 +1,584 @@
+#!/usr/bin/env python
+
+# Copyright 2017 Google Inc. All Rights Reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+"""This application demonstrates how to perform basic operations with the
+Google Cloud Vision API.
+
+Example Usage:
+python detect.py text ./resources/wakeupcat.jpg
+python detect.py labels ./resources/landmark.jpg
+python detect.py web ./resources/landmark.jpg
+python detect.py web-uri http://wheresgus.com/dog.JPG
+python detect.py web-geo ./resources/city.jpg
+python detect.py faces-uri gs://your-bucket/file.jpg
+python detect.py ocr-uri gs://python-docs-samples-tests/HodgeConj.pdf \
+gs://BUCKET_NAME/PREFIX/
+python detect.py object-localization ./resources/puppies.jpg
+python detect.py object-localization-uri gs://...
+
+For more information, the documentation at
+https://cloud.google.com/vision/docs.
+"""
+
+import argparse
+import io
+import re
+
+
+# [START vision_face_detection]
+def detect_faces(path):
+    """Detects faces in an image."""
+    from google.cloud import vision
+    client = vision.ImageAnnotatorClient()
+
+    # [START vision_python_migration_face_detection]
+    # [START vision_python_migration_image_file]
+    with io.open(path, 'rb') as image_file:
+        content = image_file.read()
+
+    image = vision.types.Image(content=content)
+    # [END vision_python_migration_image_file]
+
+    response = client.face_detection(image=image)
+    faces = response.face_annotations
+
+    # Names of likelihood from google.cloud.vision.enums
+    likelihood_name = ('UNKNOWN', 'VERY_UNLIKELY', 'UNLIKELY', 'POSSIBLE',
+                       'LIKELY', 'VERY_LIKELY')
+    print('Faces:')
+
+    for face in faces:
+        print('anger: {}'.format(likelihood_name[face.anger_likelihood]))
+        print('joy: {}'.format(likelihood_name[face.joy_likelihood]))
+        print('surprise: {}'.format(likelihood_name[face.surprise_likelihood]))
+
+        vertices = (['({},{})'.format(vertex.x, vertex.y)
+                    for vertex in face.bounding_poly.vertices])
+
+        print('face bounds: {}'.format(','.join(vertices)))
+    # [END vision_python_migration_face_detection]
+# [END vision_face_detection]
+
+
+# [START vision_face_detection_gcs]
+def detect_faces_uri(uri):
+    """Detects faces in the file located in Google Cloud Storage or the web."""
+    from google.cloud import vision
+    client = vision.ImageAnnotatorClient()
+    # [START vision_python_migration_image_uri]
+    image = vision.types.Image()
+    image.source.image_uri = uri
+    # [END vision_python_migration_image_uri]
+
+    response = client.face_detection(image=image)
+    faces = response.face_annotations
+
+    # Names of likelihood from google.cloud.vision.enums
+    likelihood_name = ('UNKNOWN', 'VERY_UNLIKELY', 'UNLIKELY', 'POSSIBLE',
+                       'LIKELY', 'VERY_LIKELY')
+    print('Faces:')
+
+    for face in faces:
+        print('anger: {}'.format(likelihood_name[face.anger_likelihood]))
+        print('joy: {}'.format(likelihood_name[face.joy_likelihood]))
+        print('surprise: {}'.format(likelihood_name[face.surprise_likelihood]))
+
+        vertices = (['({},{})'.format(vertex.x, vertex.y)
+                    for vertex in face.bounding_poly.vertices])
+
+        print('face bounds: {}'.format(','.join(vertices)))
+# [END vision_face_detection_gcs]
+
+
+# [START vision_label_detection]
+def detect_labels(path):
+    """Detects labels in the file."""
+    from google.cloud import vision
+    client = vision.ImageAnnotatorClient()
+
+    # [START vision_python_migration_label_detection]
+    with io.open(path, 'rb') as image_file:
+        content = image_file.read()
+
+    image = vision.types.Image(content=content)
+
+    response = client.label_detection(image=image)
+    labels = response.label_annotations
+    print('Labels:')
+
+    for label in labels:
+        print(label.description)
+    # [END vision_python_migration_label_detection]
+# [END vision_label_detection]
+
+
+# [START vision_label_detection_gcs]
+def detect_labels_uri(uri):
+    """Detects labels in the file located in Google Cloud Storage or on the
+    Web."""
+    from google.cloud import vision
+    client = vision.ImageAnnotatorClient()
+    image = vision.types.Image()
+    image.source.image_uri = uri
+
+    response = client.label_detection(image=image)
+    labels = response.label_annotations
+    print('Labels:')
+
+    for label in labels:
+        print(label.description)
+# [END vision_label_detection_gcs]
+
+
+# [START vision_landmark_detection]
+def detect_landmarks(path):
+    """Detects landmarks in the file."""
+    from google.cloud import vision
+    client = vision.ImageAnnotatorClient()
+
+    # [START vision_python_migration_landmark_detection]
+    with io.open(path, 'rb') as image_file:
+        content = image_file.read()
+
+    image = vision.types.Image(content=content)
+
+    response = client.landmark_detection(image=image)
+    landmarks = response.landmark_annotations
+    print('Landmarks:')
+
+    for landmark in landmarks:
+        print(landmark.description)
+        for location in landmark.locations:
+            lat_lng = location.lat_lng
+            print('Latitude {}'.format(lat_lng.latitude))
+            print('Longitude {}'.format(lat_lng.longitude))
+    # [END vision_python_migration_landmark_detection]
+# [END vision_landmark_detection]
+
+
+# [START vision_landmark_detection_gcs]
+def detect_landmarks_uri(uri):
+    """Detects landmarks in the file located in Google Cloud Storage or on the
+    Web."""
+    from google.cloud import vision
+    client = vision.ImageAnnotatorClient()
+    image = vision.types.Image()
+    image.source.image_uri = uri
+
+    response = client.landmark_detection(image=image)
+    landmarks = response.landmark_annotations
+    print('Landmarks:')
+
+    for landmark in landmarks:
+        print(landmark.description)
+# [END vision_landmark_detection_gcs]
+
+
+# [START vision_logo_detection]
+def detect_logos(path):
+    """Detects logos in the file."""
+    from google.cloud import vision
+    client = vision.ImageAnnotatorClient()
+
+    # [START vision_python_migration_logo_detection]
+    with io.open(path, 'rb') as image_file:
+        content = image_file.read()
+
+    image = vision.types.Image(content=content)
+
+    response = client.logo_detection(image=image)
+    logos = response.logo_annotations
+    print('Logos:')
+
+    for logo in logos:
+        print(logo.description)
+    # [END vision_python_migration_logo_detection]
+# [END vision_logo_detection]
+
+
+# [START vision_logo_detection_gcs]
+def detect_logos_uri(uri):
+    """Detects logos in the file located in Google Cloud Storage or on the Web.
+    """
+    from google.cloud import vision
+    client = vision.ImageAnnotatorClient()
+    image = vision.types.Image()
+    image.source.image_uri = uri
+
+    response = client.logo_detection(image=image)
+    logos = response.logo_annotations
+    print('Logos:')
+
+    for logo in logos:
+        print(logo.description)
+# [END vision_logo_detection_gcs]
+
+
+# [START vision_safe_search_detection]
+def detect_safe_search(path):
+    """Detects unsafe features in the file."""
+    from google.cloud import vision
+    client = vision.ImageAnnotatorClient()
+
+    # [START vision_python_migration_safe_search_detection]
+    with io.open(path, 'rb') as image_file:
+        content = image_file.read()
+
+    image = vision.types.Image(content=content)
+
+    response = client.safe_search_detection(image=image)
+    safe = response.safe_search_annotation
+
+    # Names of likelihood from google.cloud.vision.enums
+    likelihood_name = ('UNKNOWN', 'VERY_UNLIKELY', 'UNLIKELY', 'POSSIBLE',
+                       'LIKELY', 'VERY_LIKELY')
+    print('Safe search:')
+
+    print('adult: {}'.format(likelihood_name[safe.adult]))
+    print('medical: {}'.format(likelihood_name[safe.medical]))
+    print('spoofed: {}'.format(likelihood_name[safe.spoof]))
+    print('violence: {}'.format(likelihood_name[safe.violence]))
+    print('racy: {}'.format(likelihood_name[safe.racy]))
+    # [END vision_python_migration_safe_search_detection]
+# [END vision_safe_search_detection]
+
+
+# [START vision_safe_search_detection_gcs]
+def detect_safe_search_uri(uri):
+    """Detects unsafe features in the file located in Google Cloud Storage or
+    on the Web."""
+    from google.cloud import vision
+    client = vision.ImageAnnotatorClient()
+    image = vision.types.Image()
+    image.source.image_uri = uri
+
+    response = client.safe_search_detection(image=image)
+    safe = response.safe_search_annotation
+
+    # Names of likelihood from google.cloud.vision.enums
+    likelihood_name = ('UNKNOWN', 'VERY_UNLIKELY', 'UNLIKELY', 'POSSIBLE',
+                       'LIKELY', 'VERY_LIKELY')
+    print('Safe search:')
+
+    print('adult: {}'.format(likelihood_name[safe.adult]))
+    print('medical: {}'.format(likelihood_name[safe.medical]))
+    print('spoofed: {}'.format(likelihood_name[safe.spoof]))
+    print('violence: {}'.format(likelihood_name[safe.violence]))
+    print('racy: {}'.format(likelihood_name[safe.racy]))
+# [END vision_safe_search_detection_gcs]
+
+
+# [START vision_text_detection]
+def detect_text(path):
+    """Detects text in the file."""
+    from google.cloud import vision
+    client = vision.ImageAnnotatorClient()
+
+    # [START vision_python_migration_text_detection]
+    with io.open(path, 'rb') as image_file:
+        content = image_file.read()
+
+    image = vision.types.Image(content=content)
+
+    response = client.text_detection(image=image)
+    texts = response.text_annotations
+    print('Texts:')
+
+    for text in texts:
+        print('\n"{}"'.format(text.description))
+
+        vertices = (['({},{})'.format(vertex.x, vertex.y)
+                    for vertex in text.bounding_poly.vertices])
+
+        print('bounds: {}'.format(','.join(vertices)))
+    # [END vision_python_migration_text_detection]
+# [END vision_text_detection]
+
+
+# [START vision_text_detection_gcs]
+def detect_text_uri(uri):
+    """Detects text in the file located in Google Cloud Storage or on the Web.
+    """
+    from google.cloud import vision
+    client = vision.ImageAnnotatorClient()
+    image = vision.types.Image()
+    image.source.image_uri = uri
+
+    response = client.text_detection(image=image)
+    texts = response.text_annotations
+    print('Texts:')
+
+    for text in texts:
+        print('\n"{}"'.format(text.description))
+
+        vertices = (['({},{})'.format(vertex.x, vertex.y)
+                    for vertex in text.bounding_poly.vertices])
+
+        print('bounds: {}'.format(','.join(vertices)))
+# [END vision_text_detection_gcs]
+
+
+# [START vision_image_property_detection]
+def detect_properties(path):
+    """Detects image properties in the file."""
+    from google.cloud import vision
+    client = vision.ImageAnnotatorClient()
+
+    # [START vision_python_migration_image_properties]
+    with io.open(path, 'rb') as image_file:
+        content = image_file.read()
+
+    image = vision.types.Image(content=content)
+
+    response = client.image_properties(image=image)
+    props = response.image_properties_annotation
+    print('Properties:')
+
+    for color in props.dominant_colors.colors:
+        print('fraction: {}'.format(color.pixel_fraction))
+        print('\tr: {}'.format(color.color.red))
+        print('\tg: {}'.format(color.color.green))
+        print('\tb: {}'.format(color.color.blue))
+        print('\ta: {}'.format(color.color.alpha))
+    # [END vision_python_migration_image_properties]
+# [END vision_image_property_detection]
+
+
+# [START vision_image_property_detection_gcs]
+def detect_properties_uri(uri):
+    """Detects image properties in the file located in Google Cloud Storage or
+    on the Web."""
+    from google.cloud import vision
+    client = vision.ImageAnnotatorClient()
+    image = vision.types.Image()
+    image.source.image_uri = uri
+
+    response = client.image_properties(image=image)
+    props = response.image_properties_annotation
+    print('Properties:')
+
+    for color in props.dominant_colors.colors:
+        print('frac: {}'.format(color.pixel_fraction))
+        print('\tr: {}'.format(color.color.red))
+        print('\tg: {}'.format(color.color.green))
+        print('\tb: {}'.format(color.color.blue))
+        print('\ta: {}'.format(color.color.alpha))
+# [END vision_image_property_detection_gcs]
+
+
+# [START vision_web_detection]
+def detect_web(path):
+    """Detects web annotations given an image."""
+    from google.cloud import vision
+    client = vision.ImageAnnotatorClient()
+
+    # [START vision_python_migration_web_detection]
+    with io.open(path, 'rb') as image_file:
+        content = image_file.read()
+
+    image = vision.types.Image(content=content)
+
+    response = client.web_detection(image=image)
+    annotations = response.web_detection
+
+    if annotations.best_guess_labels:
+        for label in annotations.best_guess_labels:
+            print('\nBest guess label: {}'.format(label.label))
+
+    if annotations.pages_with_matching_images:
+        print('\n{} Pages with matching images found:'.format(
+            len(annotations.pages_with_matching_images)))
+
+        for page in annotations.pages_with_matching_images:
+            print('\n\tPage url   : {}'.format(page.url))
+
+            if page.full_matching_images:
+                print('\t{} Full Matches found: '.format(
+                       len(page.full_matching_images)))
+
+                for image in page.full_matching_images:
+                    print('\t\tImage url  : {}'.format(image.url))
+
+            if page.partial_matching_images:
+                print('\t{} Partial Matches found: '.format(
+                       len(page.partial_matching_images)))
+
+                for image in page.partial_matching_images:
+                    print('\t\tImage url  : {}'.format(image.url))
+
+    if annotations.web_entities:
+        print('\n{} Web entities found: '.format(
+            len(annotations.web_entities)))
+
+        for entity in annotations.web_entities:
+            print('\n\tScore      : {}'.format(entity.score))
+            print(u'\tDescription: {}'.format(entity.description))
+
+    if annotations.visually_similar_images:
+        print('\n{} visually similar images found:\n'.format(
+            len(annotations.visually_similar_images)))
+
+        for image in annotations.visually_similar_images:
+            print('\tImage url    : {}'.format(image.url))
+    # [END vision_python_migration_web_detection]
+# [END vision_web_detection]
+
+
+# [START vision_web_detection_gcs]
+def detect_web_uri(uri):
+    """Detects web annotations in the file located in Google Cloud Storage."""
+    from google.cloud import vision
+    client = vision.ImageAnnotatorClient()
+    image = vision.types.Image()
+    image.source.image_uri = uri
+
+    response = client.web_detection(image=image)
+    annotations = response.web_detection
+
+    if annotations.best_guess_labels:
+        for label in annotations.best_guess_labels:
+            print('\nBest guess label: {}'.format(label.label))
+
+    if annotations.pages_with_matching_images:
+        print('\n{} Pages with matching images found:'.format(
+            len(annotations.pages_with_matching_images)))
+
+        for page in annotations.pages_with_matching_images:
+            print('\n\tPage url   : {}'.format(page.url))
+
+            if page.full_matching_images:
+                print('\t{} Full Matches found: '.format(
+                       len(page.full_matching_images)))
+
+                for image in page.full_matching_images:
+                    print('\t\tImage url  : {}'.format(image.url))
+
+            if page.partial_matching_images:
+                print('\t{} Partial Matches found: '.format(
+                       len(page.partial_matching_images)))
+
+                for image in page.partial_matching_images:
+                    print('\t\tImage url  : {}'.format(image.url))
+
+    if annotations.web_entities:
+        print('\n{} Web entities found: '.format(
+            len(annotations.web_entities)))
+
+        for entity in annotations.web_entities:
+            print('\n\tScore      : {}'.format(entity.score))
+            print(u'\tDescription: {}'.format(entity.description))
+
+    if annotations.visually_similar_images:
+        print('\n{} visually similar images found:\n'.format(
+            len(annotations.visually_similar_images)))
+
+        for image in annotations.visually_similar_images:
+            print('\tImage url    : {}'.format(image.url))
+# [END vision_web_detection_gcs]
+
+
+# [START vision_web_detection_include_geo]
+def web_entities_include_geo_results(path):
+    """Detects web annotations given an image, using the geotag metadata
+    in the image to detect web entities."""
+    from google.cloud import vision
+    client = vision.ImageAnnotatorClient()
+
+    with io.open(path, 'rb') as image_file:
+        content = image_file.read()
+
+    image = vision.types.Image(content=content)
+
+    web_detection_params = vision.types.WebDetectionParams(
+        include_geo_results=True)
+    image_context = vision.types.ImageContext(
+        web_detection_params=web_detection_params)
+
+    response = client.web_detection(image=image, image_context=image_context)
+
+    for entity in response.web_detection.web_entities:
+        print('\n\tScore      : {}'.format(entity.score))
+        print(u'\tDescription: {}'.format(entity.description))
+# [END vision_web_detection_include_geo]
+
+
+# [START vision_web_detection_include_geo_gcs]
+def web_entities_include_geo_results_uri(uri):
+    """Detects web annotations given an image in the file located in
+    Google Cloud Storage., using the geotag metadata in the image to
+    detect web entities."""
+    from google.cloud import vision
+    client = vision.ImageAnnotatorClient()
+
+    image = vision.types.Image()
+    image.source.image_uri = uri
+
+    web_detection_params = vision.types.WebDetectionParams(
+        include_geo_results=True)
+    image_context = vision.types.ImageContext(
+        web_detection_params=web_detection_params)
+
+    response = client.web_detection(image=image, image_context=image_context)
+
+    for entity in response.web_detection.web_entities:
+        print('\n\tScore      : {}'.format(entity.score))
+        print(u'\tDescription: {}'.format(entity.description))
+# [END vision_web_detection_include_geo_gcs]
+
+
+# [START vision_crop_hint_detection]
+def detect_crop_hints(path):
+    """Detects crop hints in an image."""
+    from google.cloud import vision
+    client = vision.ImageAnnotatorClient()
+
+    # [START vision_python_migration_crop_hints]
+    with io.open(path, 'rb') as image_file:
+        content = image_file.read()
+    image = vision.types.Image(content=content)
+
+    crop_hints_params = vision.types.CropHintsParams(aspect_ratios=[1.77])
+    image_context = vision.types.ImageContext(
+        crop_hints_params=crop_hints_params)
+
+    response = client.crop_hints(image=image, image_context=image_context)
+    hints = response.crop_hints_annotation.crop_hints
+
+    for n, hint in enumerate(hints):
+        print('\nCrop Hint: {}'.format(n))
+
+        vertices = (['({},{})'.format(vertex.x, vertex.y)
+                    for vertex in hint.bounding_poly.vertices])
+
+        print('bounds: {}'.format(','.join(vertices)))
+    # [END vision_python_migration_crop_hints]
+# [END vision_crop_hint_detection]
+
+
+# [START vision_crop_hint_detection_gcs]
+def detect_crop_hints_uri(uri):
+    """Detects crop hints in the file located in Google Cloud Storage."""
+    from google.cloud import vision
+    client = vision.ImageAnnotatorClient()
+    image = vision.types.Image()
+    image.source.image_uri = uri
+
+    crop_hints_params = vision.types.CropHintsParams(aspect_ratios=[1.77])
+    image_context = vision.types.ImageContext(
+        crop_hints_params=crop_hints_params)
+
+    response = client.crop_hints(image=image, image_context=image_context)
+
