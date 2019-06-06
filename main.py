@@ -1,22 +1,30 @@
 import sys
+import csv
+import os
 # Creating the dictionary
-clients = [
-    {
-        'name': 'Enrique',
-        'company': 'EPAM' ,
-        'email': 'enrique_zetina@epam.com',
-        'position': 'Software Engienner',
-    },
-    {
-        'name': 'Juan',
-        'company': 'Google',
-        'email': 'juan@google.com',
-        'position': 'Data Engienner',
-    }
-]
+CLIENT_TABLE = '.clients.csv'
+CLIENT_SCHEMA = ['name', 'company', 'email', 'position']
+clients = []
 
+# Function to read the clients table
+def _initialize_clients_from_storage():
+    with open(CLIENT_TABLE, mode='r') as f:
+        reader = csv.DictReader(f, fieldnames= CLIENT_SCHEMA)
 
-# global is used to define that the  variable clients is global
+        for row in reader:
+            clients.append(row)
+
+# Function to save the rows in a Client table
+def _save_clients_to_storage():
+    tmp_table_name='{}.tmp'.format(CLIENT_TABLE)
+    with open(CLIENT_TABLE,mode='w') as f:
+        writer = csv.DictWriter(f,fieldnames= CLIENT_SCHEMA)
+        writer.writerows(clients)
+
+        os.remove(CLIENT_TABLE)
+        os.rename(tmp_table_name, CLIENT_TABLE)
+
+# ed to define that the  variable clients is global
 # it means that it has been defined as 'Pablo and Ricardo'
 def create_client(client):
     global clients
@@ -81,7 +89,7 @@ def search_client(client_name):
         if client['name'] != client_name:
             continue
         else:
-            return True    
+            return True
 
 # Function to print a welcome message
 
@@ -108,8 +116,8 @@ def _get_client_field(field_name, message='What is the client {}?'):
 
     while not field:
         field = input(message.format(field_name))
-     
-    return field 
+
+    return field
 
 #Another funtion to try get  values from clients
 def _get_client_from_user():
@@ -138,6 +146,7 @@ def _get_client_name():
 
 # main function calls crate_client
 if __name__ == '__main__':
+    _initialize_clients_from_storage()
     _print_welcome()
 
  # Stop the execution until we have a option selected
@@ -147,21 +156,20 @@ if __name__ == '__main__':
  # Lets check what the user want to do
     if command == 'C':
         client = _get_client_from_user()
-
         create_client(client)
-        list_clients()
+        #list_clients()
     elif command == 'R':
         list_clients()
     elif command == 'U':
-        list_clients()
+        #list_clients()
         client_id = int(_get_client_field('id'))
         updated_client = _get_client_from_user()
 
         update_client(client_id, updated_client)
-        list_clients()   
+        #list_clients()   
     elif command == 'D':
         list_clients()
-        client_id = int(_get_client_field('id'))
+        #client_id = int(_get_client_field('id'))
 
 
         delete_client(client_id)
@@ -172,6 +180,8 @@ if __name__ == '__main__':
         if found:
             print(client_name + ' found!')
         else:
-            print( ' {} not found!'.format(client_name))   
+            print( ' {} not found!'.format(client_name))
     else:
         print('Invalid option')
+
+    _save_clients_to_storage()
