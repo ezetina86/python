@@ -2,7 +2,7 @@ import sys
 import csv
 import os
 # Creating the dictionary
-CLIENT_TABLE = '.clients.csv'
+CLIENT_TABLE = '/home/joseenrique/python/clients.csv'
 CLIENT_SCHEMA = ['name', 'company', 'email', 'position']
 clients = []
 
@@ -16,10 +16,11 @@ def _initialize_clients_from_storage():
 
 # Function to save the rows in a Client table
 def _save_clients_to_storage():
-    tmp_table_name='{}.tmp'.format(CLIENT_TABLE)
-    with open(CLIENT_TABLE,mode='w') as f:
+    tmp_table_name ='{}.tmp'.format(CLIENT_TABLE)
+    with open(tmp_table_name,mode='w') as f:
         writer = csv.DictWriter(f,fieldnames= CLIENT_SCHEMA)
         writer.writerows(clients)
+        f.close
 
         os.remove(CLIENT_TABLE)
         os.rename(tmp_table_name, CLIENT_TABLE)
@@ -168,8 +169,8 @@ if __name__ == '__main__':
         update_client(client_id, updated_client)
         #list_clients()   
     elif command == 'D':
-        list_clients()
-        #client_id = int(_get_client_field('id'))
+        #list_clients()
+        client_id = int(_get_client_field('id'))
 
 
         delete_client(client_id)
