@@ -1,19 +1,20 @@
-import csv
+from clients.models import Client
+from common.services import PVService
 
-from  clients.models import Client
 
+class ClientService(PVService):
 
-class ClientService:
     def __init__(self, table_name):
-        self.table_name = table_name
+        super().__init__(table_name)
 
-    def create_client(self,client):
-        with open(self.table_name, mode='a') as f:
-            writer = csv.DictWriter(f, fieldnames = Client.schema())
-            writer.writerow(client.to_dict())
+    def create_client(self, client):
+        self.create(client.to_dict(), Client.schema())
 
     def list_clients(self):
-        with open(self.table_name, mode='r') as f:
-            reader = csv.DictReader(f, fieldnames = Client.schema())
+        return self.list(Client.schema())
 
-            return list(reader)
+    def update_client(self, updated_client):
+        self.update(updated_client.to_dict(), Client.schema())
+
+    def delete_client(self, client_uid):
+        self.delete(client_uid, Client.schema())
