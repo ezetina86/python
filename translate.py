@@ -1,43 +1,32 @@
 #!/usr/bin/env python
+# coding:utf-8
 
-# Copyright 2016 Google Inc. All Rights Reserved.
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
-
-def run_quickstart():
-    # [START translate_quickstart]
-    # Imports the Google Cloud client library
+def translate():
     from google.cloud import translate
 
     # Instantiates a client
     translate_client = translate.Client()
 
     # The text to translate
-    text = u'Hello, world!'
+    list = [u'<span style=color: rgb(255,0,0);>・削除でお願いします。</span>'
+    , u'<strong>質疑応答の内容（後日の回答分を含む）、はこちら！</strong>'
+    , u'<strong>SDXCカードを初めて差したときには「本体更新」を求められます。</strong>']
+
+    length= len(list)
+
     # The target language
-    target = 'ru'
+    target= 'en'
 
-    # Translates some text into Russian
-    translation = translate_client.translate(
-        text,
-        target_language=target)
+    # Loop for translation
+    # Translates some text into Japanese
+    for i in  range(length):
+        translation = translate_client.translate(
+        list[i], target_language=target)
+        print("String "+ str(i+1) + ":")
+        print(" ")
+        print(u'Text: {}'.format(list[i]))
+        print(u'Translation: {}'.format(translation['translatedText']))
+        print (" ")
 
-    print(u'Text: {}'.format(text))
-    print(u'Translation: {}'.format(translation['translatedText']))
-    # [END translate_quickstart]
-
-
-if __name__ == '__main__':
-    run_quickstart()
-
+if __name__ == "__main__":
+   translate()
