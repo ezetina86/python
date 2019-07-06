@@ -1,0 +1,1 @@
+Hi this is an example made by GCP Support to test Batch Translation API, please use it with caution.
