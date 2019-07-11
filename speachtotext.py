@@ -6,9 +6,6 @@ from google.cloud import speech
 from google.cloud.speech import enums
 from google.cloud.speech import types
 
-
-
-
 # Instantiates a client
 client = speech.SpeechClient()
 
@@ -34,4 +31,4 @@ response = client.recognize(config, audio)
 for result in response.results:
     print('Transcript: {}'.format(result.alternatives[0].transcript))
 
-print("Finish")    
+print("Finish")
