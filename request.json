@@ -1,0 +1,8 @@
+  {
+      "config": {
+          "languageCode": "en-US"
+      },
+      "audio": {
+          "uri":"gs://data-onboarding-ez-vcm/final.mp3"
+      }
+    }
